@@ -1,0 +1,32 @@
+#image: travisci/ci-garnet:packer-1512502276-986baf0
+image: pypy:latest
+
+build:
+  tags:
+    - shared
+  stage: build
+  variables:
+    GIT_DEPTH: "1"
+
+  before_script:
+    - apt-get update
+    - apt-get -y install apt-transport-https gnupg-curl ca-certificates git
+    - echo "deb https://dl.bintray.com/kaitai-io/debian jessie main" | tee /etc/apt/sources.list.d/kaitai.list
+    - apt-key adv --keyserver hkps://keyserver.ubuntu.com/ --recv 8756c4f765c9ac3cb6b85d62379ce192d401ab61
+    - apt-get -y update
+    - apt-get -y install kaitai-struct-compiler
+    - pip3 install git+https://github.com/gitpython-developers/GitPython.git#egg=GitPython-dev
+    - pip3 install --upgrade setuptools
+    - pip3 install coveralls setuptools_scm
+  
+  cache:
+    paths:
+      - kaitai_struct_formats
+  script:
+    - pypy3 setup.py bdist_wheel
+    - coverage run --source=kaitaiStructCompile setup.py test
+    - pip3 install --upgrade ./dist/*.whl
+  
+  artifacts:
+    paths:
+      - dist

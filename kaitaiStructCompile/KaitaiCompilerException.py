@@ -1,0 +1,2 @@
+class KaitaiCompilerException(Exception):
+	pass
